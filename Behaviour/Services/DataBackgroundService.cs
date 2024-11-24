@@ -44,7 +44,7 @@ public class DataBackgroundService(
         using var scope = Provider!.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PersonContext>();
         var personsSet = dbContext.Persons;
-        var hasPersistedPersons = (await personsSet!.CountAsync()) > 0;
+        var hasPersistedPersons = await personsSet!.AnyAsync(ct);
 
         while(!ct.IsCancellationRequested)
         {
@@ -90,5 +90,4 @@ public class DataBackgroundService(
             await Task.Delay(TimeSpan.FromMinutes(12), ct);
         }
     }
-}
 }
