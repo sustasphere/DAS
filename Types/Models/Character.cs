@@ -78,7 +78,7 @@ public class Character : IEquatable<Character>
     /// </summary>
     /// <returns></returns>
     public Person AsPerson() => new() {
-        Path = Url.Substring(Url.IndexOf("api")),
+        Path = Url[Url.IndexOf("api/")..],
         Name = Name,
         Gender = Gender,
         Culture = Culture,
