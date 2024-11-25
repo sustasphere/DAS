@@ -1,11 +1,13 @@
 ﻿using DAS.GoT.Types.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static DAS.GoT.Behaviour.Functions.HttpRequestFunctions;
 
 namespace DAS.GoT.Behaviour.Services;
 
@@ -14,11 +16,13 @@ namespace DAS.GoT.Behaviour.Services;
 /// </summary>
 /// <param name="logger"></param>
 /// <param name="store"></param>
+/// <param name="configuration"></param>
 /// <param name="provider"></param>
 /// <param name="clientFactory"></param>
 public class DataBackgroundService(
     ILogger<DataBackgroundService> logger,
     ICoreStore store,
+    IConfiguration configuration,
     IServiceProvider provider,
     IHttpClientFactory clientFactory) : BackgroundService
 {
@@ -32,23 +36,6 @@ public class DataBackgroundService(
     {
         try
         {
-            var serializerOptions = new JsonSerializerOptions() {
-                AllowTrailingCommas = true,
-                PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate,
-                PropertyNameCaseInsensitive = true
-            };
-            var host = "anapioficeandfire.com";
-            var data = "characters";
-            var url = $"https://www.{host}/api/{data}";
-            var client = clientFactory.CreateClient();
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url) {
-                Content = default,
-                Headers = {
-                    { HeaderNames.Accept, "application/json" },
-                    { HeaderNames.UserAgent, "WebApi Client" }
-                }
-            };
-
             using var scope = provider!.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<PersonContext>();
             var personsSet = dbContext.Persons;
@@ -56,7 +43,8 @@ public class DataBackgroundService(
 
             while(!ct.IsCancellationRequested)
             {
-                var responseMessage = await client.SendAsync(requestMessage, ct);
+                var responseMessage = await clientFactory.WithClient()
+                    .SendAsync(configuration.WithRequest(), ct);
                 if(responseMessage!.IsSuccessStatusCode)
                 {
                     using var textTask = responseMessage.Content.ReadAsStringAsync(ct);
@@ -68,7 +56,7 @@ public class DataBackgroundService(
                     else
                     {
                         using var stream = await responseMessage.Content?.ReadAsStreamAsync(ct)!;
-                        var characters = await JsonSerializer.DeserializeAsync<IEnumerable<Character>>(stream, serializerOptions, ct);
+                        var characters = await JsonSerializer.DeserializeAsync<IEnumerable<Character>>(stream, WithSerializerOptions(), ct);
                         if(characters is object && characters.Any())
                         {
                             if(store.IsEmpty())
@@ -105,7 +93,7 @@ public class DataBackgroundService(
                 }
                 else
                 {
-                    logger.LogError($"Unable to retrieve {data} from {host}; [{responseMessage.StatusCode}]");
+                    logger.LogError($"Unable to retrieve characters from host; [{responseMessage.StatusCode}]");
                     if(hasPersistedPersons)
                     {
                         var characters = dbContext!.Persons!.Include(p => p.Aliases).Select(p => p.AsCharacter()).ToList();
@@ -113,7 +101,7 @@ public class DataBackgroundService(
                     }
                     else
                     {
-                        logger.LogError($"Unable to retrieve {data} from database either");
+                        logger.LogError($"Unable to retrieve characters from database either");
                     }
                 }
                 await Task.Delay(TimeSpan.FromMinutes(12), ct);
