@@ -1,4 +1,4 @@
-﻿namespace DAS.GoT.Types.Models;
+﻿namespace DAS.GoT.Types.Utils;
 /// <summary>
 /// 
 /// </summary>
@@ -16,7 +16,7 @@ public class Paged<TResult> where TResult : class
     /// <summary>
     /// 
     /// </summary>
-    public Dictionary<int, TResult> Pages { get; private set; } = [];
+    public Dictionary<int, IEnumerable<TResult>> Pages { get; private set; } = [];
 
     /// <summary>
     /// 
@@ -27,14 +27,20 @@ public class Paged<TResult> where TResult : class
     public static Paged<TResult> Create(IEnumerable<TResult> values, int itemsPerPage)
     {
         decimal totalItems = values.Count();
+        var pages = new Dictionary<int, IEnumerable<TResult>>();
         if(itemsPerPage > 0)
         {
+            var totalPages = (int)Math.Max(1, Math.Ceiling(totalItems / itemsPerPage));
+            for(int pageIdx = 0; pageIdx <= totalPages; pageIdx += itemsPerPage)
+            {
+                var page = values.Take(itemsPerPage);
+                pages.Add(pageIdx, page);
+                values = values.Skip(itemsPerPage);
+            }
             return new() {
                 TotalItems = (int)totalItems,
-                TotalPages = (int)Math.Max(1, Math.Ceiling(totalItems / itemsPerPage)),
-                Pages = new Dictionary<int, TResult>(values.Select(
-                    (v, idx) => new KeyValuePair<int, TResult>(idx, v))
-                )
+                TotalPages = totalPages,
+                Pages = pages
             };
         }
         else

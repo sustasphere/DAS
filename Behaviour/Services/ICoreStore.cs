@@ -21,6 +21,13 @@ public interface ICoreStore
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    bool HasIdentical(CharacterCore value);
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="values"></param>
     /// <returns></returns>
     bool HasIdentical(IEnumerable<CharacterCore> values);

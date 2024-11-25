@@ -22,6 +22,13 @@ public class CoreStore : ICoreStore
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public bool HasIdentical(CharacterCore value) => Characters.Values.Any(c => c.Equals(value));
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="values"></param>
     /// <returns></returns>
     public bool HasIdentical(IEnumerable<CharacterCore> values)

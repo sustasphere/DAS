@@ -80,7 +80,7 @@ public class Character : IEquatable<Character>
     /// </summary>
     /// <returns></returns>
     public Person AsPerson() => new() {
-        Path = Url[Url.IndexOf("api/")..],
+        Path = Url.Contains("api/") ? Url[Url.IndexOf("api/")..] : "api/characters/999",
         Name = Name,
         Gender = Gender,
         Culture = Culture,
@@ -112,7 +112,7 @@ public class Character : IEquatable<Character>
             Gender = Gender,
             Culture = Culture,
             Born = Born,
-            Alias = Aliases.Any() ? Aliases.First() : Empty
+            Alias = Aliases.Any() ? Join("; ", Aliases) : Empty
         };
     }
 
@@ -128,6 +128,7 @@ public class Character : IEquatable<Character>
     /// <param name="obj"></param>
     /// <returns></returns>
     public override bool Equals(object? obj) => this.Equals(obj as Character);
+
     /// <summary>
     /// 
     /// </summary>
@@ -148,7 +149,8 @@ public class Character : IEquatable<Character>
     /// 
     /// </summary>
     /// <returns></returns>
-    public override int GetHashCode() => (GetUrlKey(), Join(", ", Aliases), Gender, Culture, Born).GetHashCode();
+    public override int GetHashCode()
+        => (GetUrlKey(), Join(", ", Aliases), Gender, Culture, Born).GetHashCode();
 
     string GetUrlKey()
     {

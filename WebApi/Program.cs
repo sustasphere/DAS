@@ -1,4 +1,7 @@
+using DAS.GoT.Behaviour.Consumers;
+using DAS.GoT.Behaviour.Filters;
 using DAS.GoT.Behaviour.Services;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAS.GoT.WebApi;
@@ -19,6 +22,14 @@ public class Program
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddMediator(cfg => {
+            cfg.AddConsumer<AddCharacterRequestConsumer>();
+            cfg.AddConsumer<AddCharacterNotificationConsumer>();
+            cfg.ConfigureMediator((mctx, mcfg) => {
+                mcfg.UseSendFilter(typeof(AddCharacterRequestFilter<>), mctx);
+            });
+        });
 
         var app = builder.Build();
 

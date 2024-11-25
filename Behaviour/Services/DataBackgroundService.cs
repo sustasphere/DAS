@@ -96,10 +96,10 @@ public class DataBackgroundService(
 
                                 if(shouldPersist)
                                 {
-                                    dbContext.Add(character.AsPerson());
+                                    _ = dbContext.Add(character.AsPerson());
                                 }
                             }
-                            await dbContext.SaveChangesAsync(ct);
+                            _ = await dbContext.SaveChangesAsync(ct);
                         }
                     }
                 }
