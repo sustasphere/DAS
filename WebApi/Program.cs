@@ -11,9 +11,11 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        var connectionString = builder.Configuration.GetConnectionString("DevDb");
 
-        builder.Services.AddDbContext<PersonContext>(cfg => cfg.UseSqlite(connectionString));
+        var withConnString = builder.Configuration.GetConnectionString("DevDb");
+        Action<DbContextOptionsBuilder> withOptionsBuilder = ob => ob.UseSqlite(withConnString);
+
+        builder.Services.AddDbContext<PersonContext>(withOptionsBuilder);
         builder.Services.AddHttpClient();
         builder.Services.AddSingleton<ICoreStore, CoreStore>();
         builder.Services.AddHostedService<DataBackgroundService>();
