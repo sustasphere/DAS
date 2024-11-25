@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DAS.GoT.Types.Models;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using static System.String;
 
@@ -84,4 +86,25 @@ public class Person
     /// 
     /// </summary>
     public List<Player> PlayedBy { get; set; } = [];
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public Character AsCharacter()
+    {
+        // ToDo: remove from entity! Instead, add it as an extension method
+        if(IsNullOrEmpty(Path))
+        {
+            throw new ArgumentException("Person's Path is invalid; should not be null or empty", Path);
+        }
+        return new() {
+            Url = Path,
+            Gender = Gender,
+            Culture = Culture,
+            Born = Born,
+            Aliases = Aliases.Any() ? Aliases.Select(a => a.Name).ToArray() : [Empty]
+        };
+    }
 }

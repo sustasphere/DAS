@@ -1,4 +1,6 @@
 ﻿using DAS.GoT.Types.Entities;
+using System.Security.Cryptography;
+using System.Text;
 using static System.String;
 
 namespace DAS.GoT.Types.Models;
@@ -99,6 +101,30 @@ public class Character : IEquatable<Character>
     /// <summary>
     /// 
     /// </summary>
+    /// <returns></returns>
+    public CharacterCore AsCore()
+    {
+        var key = GetUrlKey();
+        _ = int.TryParse(key, out int id);
+
+        return new() {
+            Id = id <= 0 ? Guid.NewGuid() : new Guid(WithHash()),
+            Gender = Gender,
+            Culture = Culture,
+            Born = Born,
+            Alias = Aliases.Any() ? Aliases.First() : Empty
+        };
+    }
+
+    byte[] WithHash()
+    {
+        var source = GetUrlKey() + Join(", ", Aliases) + Gender + Culture + Born;
+        return MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(source));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
     public override bool Equals(object? obj) => this.Equals(obj as Character);
@@ -122,7 +148,24 @@ public class Character : IEquatable<Character>
     /// 
     /// </summary>
     /// <returns></returns>
-    public override int GetHashCode() => (Url?.Split("/")?.Last(), Join(", ", Aliases), Gender, Born).GetHashCode();
+    public override int GetHashCode() => (GetUrlKey(), Join(", ", Aliases), Gender, Culture, Born).GetHashCode();
+
+    string GetUrlKey()
+    {
+        var key = Empty;
+        if(IsNullOrEmpty(Url))
+        {
+            throw new ArgumentException("Character's Url is invalid; should not be null or empty", Url);
+        }
+        else
+        {
+            if(Url.Contains("/"))
+            {
+                key = Url.Split("/")!.Last();
+            }
+        }
+        return key;
+    }
 
     /// <summary>
     /// 

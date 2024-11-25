@@ -11,11 +11,11 @@ public class Program
         var connectionString = builder.Configuration.GetConnectionString("DevDb");
 
         builder.Services.AddDbContext<PersonContext>(cfg => cfg.UseSqlite(connectionString));
+        builder.Services.AddHttpClient();
+        builder.Services.AddSingleton<ICoreStore, CoreStore>();
+        builder.Services.AddHostedService<DataBackgroundService>();
 
         builder.Services.AddControllers();
-        builder.Services.AddHttpClient();
-
-        builder.Services.AddHostedService<DataBackgroundService>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -29,9 +29,6 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
 
         app.MapControllers();
 

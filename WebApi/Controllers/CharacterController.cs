@@ -1,12 +1,16 @@
+using DAS.GoT.Behaviour.Services;
 using DAS.GoT.Types.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DAS.GoT.WebApi.Controllers;
 
-[ApiController, Route("api/[controller]s")]
-public class CharacterController : ControllerBase
+[ApiController]
+public class CharacterController(ICoreStore store) : ControllerBase
 {
-    [HttpGet(Name = "GetCharacters")]
-    public IEnumerable<Character> Get()
-        => Enumerable.Range(1, 3).Select(index => new Character { }).ToArray();
+    [HttpGet, Route("api/[controller]s")]
+    public IEnumerable<CharacterCore> Get() => store.GetAll();
+
+    [HttpGet, Route("api/[controller]s/{alias}/{itemsPerPage?}")]
+    public Paged<CharacterCore> Search(string alias, int itemsPerPage = 10)
+        => Paged<CharacterCore>.Create(store.Search(alias), itemsPerPage);
 }

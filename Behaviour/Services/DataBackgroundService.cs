@@ -13,14 +13,15 @@ namespace DAS.GoT.Behaviour.Services;
 /// 
 /// </summary>
 /// <param name="logger"></param>
+/// <param name="store"></param>
 /// <param name="provider"></param>
 /// <param name="clientFactory"></param>
 public class DataBackgroundService(
     ILogger<DataBackgroundService> logger,
+    ICoreStore store,
     IServiceProvider provider,
     IHttpClientFactory clientFactory) : BackgroundService
 {
-    //public IServiceProvider? Provider { get; }
     /// <summary>
     /// 
     /// </summary>
@@ -36,7 +37,9 @@ public class DataBackgroundService(
                 PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate,
                 PropertyNameCaseInsensitive = true
             };
-            var url = "https://www.anapioficeandfire.com/api/characters";
+            var host = "anapioficeandfire.com";
+            var data = "characters";
+            var url = $"https://www.{host}/api/{data}";
             var client = clientFactory.CreateClient();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url) {
                 Content = default,
@@ -65,10 +68,24 @@ public class DataBackgroundService(
                     else
                     {
                         using var stream = await responseMessage.Content?.ReadAsStreamAsync(ct)!;
-                        var result = await JsonSerializer.DeserializeAsync<IEnumerable<Character>>(stream, serializerOptions, ct);
-                        if(result is object && result.Any())
+                        var characters = await JsonSerializer.DeserializeAsync<IEnumerable<Character>>(stream, serializerOptions, ct);
+                        if(characters is object && characters.Any())
                         {
-                            foreach(var character in result.Take(3))
+                            if(store.IsEmpty())
+                            {
+                                store.AddMany(characters);
+                            }
+                            else
+                            {
+                                if(!store.HasIdentical(characters.Select(c => c.AsCore())))
+                                {
+                                    // ToDo: improve removal and / or adding of characters
+                                    store.RemoveAll();
+                                    store.AddMany(characters);
+                                }
+                            }
+
+                            foreach(var character in characters)
                             {
                                 var path = character.Url[character.Url.IndexOf("api/")..];
                                 bool shouldPersist = true;
@@ -79,11 +96,24 @@ public class DataBackgroundService(
 
                                 if(shouldPersist)
                                 {
-                                    //dbContext.Add(character.AsPerson());
+                                    dbContext.Add(character.AsPerson());
                                 }
                             }
-                            //await dbContext.SaveChangesAsync(ct);
+                            await dbContext.SaveChangesAsync(ct);
                         }
+                    }
+                }
+                else
+                {
+                    logger.LogError($"Unable to retrieve {data} from {host}; [{responseMessage.StatusCode}]");
+                    if(hasPersistedPersons)
+                    {
+                        var characters = dbContext!.Persons!.Include(p => p.Aliases).Select(p => p.AsCharacter()).ToList();
+                        store.AddMany(characters);
+                    }
+                    else
+                    {
+                        logger.LogError($"Unable to retrieve {data} from database either");
                     }
                 }
                 await Task.Delay(TimeSpan.FromMinutes(12), ct);
