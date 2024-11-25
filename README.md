@@ -56,14 +56,19 @@ Since it is the result of an assessment, the code is written within a 'time cons
 Therefor, it contains several ***to do's***. However, these to do's are ***by no means complete!***
 
 Please also note that the WebApi uses only 'in process' messaging. 
-However, it is fairly easy to change the message-bus instance to RabbitMQ or Azure Service Bus.
+However - using MassTransit - it is fairly easy to change the message-bus instance to RabbitMQ or Azure Service Bus.
+Actually, that's the beauty of using MassTransist, it perfectly abstract the complexity of "what's under the hood".
 
-Please also note that the current code ***lacks any unit tests***; this is unfortunately, but simply due to lack of time.
+Please also note that the current code ***lacks any unit tests***; this is unfortunately, but simply due to lack of time...
 
-In addition to the lack of unit tests, most of the code within the consumers, filters and services has low readability and lacks testability.
+In addition to the lack of unit tests, most of the code within the consumers, filters and services have low readability and lack of testability.
 For improving the readability and testability, I would have preferred to use extension methods, but again: lack of time.
 
-The best way is getting in touch with the original developer => <giovanni.scheepers@outlook.com>
+However, an initial approach has been made by adding the static class HttpRequestFunctions within the Behaviour project. 
+The static functions of this class are very much testable and readable. 
+Hence, by extending this approach, one can also improve the overall testability and readability, say for instance of the background service.
+
+The best way - for now however - is getting in touch with the original developer => <giovanni.scheepers@outlook.com>
 
 ## High Level Code Flow
 At start-up of the WebApi project, a background service is instantiated, which will poll the 'so called server' for every 12 minutes.
