@@ -11,6 +11,10 @@ The solution also contains a SqlLite database instance: WebApi.db.
 Before one can actual run the solution, one should check if a network connection exist.
 The reason for this, is that the WebApi project does a continuous polling on 'a so called' server; by default located at www.anapioficeandfire.com.
 
+Building the WebApi project is obviously simple; simply run 'dotnet build' within the WebApi folder. 
+Note that all files 'under the bin/Debug/net8.0 folder' have been removed before creating the zip-file of the solution.
+Hence, a first build of the WebApi project is mandatory.
+
 >The steps written below are ***only necessary if one should want to alter the existing database*** instance (e.g. from current SqLite to Sql Server).
 
 If one should choose to alter the existing database; eg. remove the existing SqlLite instance and add a SqlServer instance, one should do the following:
