@@ -1,4 +1,5 @@
 ﻿using DAS.GoT.Behaviour.Functions;
+using DAS.GoT.Types.Models;
 using DAS.GoT.Types.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,10 +40,10 @@ public class DataBackgroundService(
 
             while(!ct.IsCancellationRequested)
             {
-                var responseMessage = await clientFactory.WithClient().SendAsync(setup.WithRequest(), ct);
-                if(responseMessage.IsSuccessStatusCode && await responseMessage.HasJsonContentAsync(ct))
+                var response = await clientFactory.WithClient().SendAsync(setup.WithRequest(), ct);
+                if(response.IsSuccessStatusCode && await response.HasJsonContentAsync(ct))
                 {
-                    var characters = await responseMessage.AsCharactersAsync(ct);
+                    var characters = await response.SerializeAsync<IEnumerable<Character>>(ct);
                     _ = await store.LoadAsync(characters, ct);
                     _ = await dbContext.LoadAsync(characters, ct);
                 }

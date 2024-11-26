@@ -77,18 +77,18 @@ public static class HttpRequestFunctions
     /// <param name="ct"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static async Task<IEnumerable<Character>> AsCharactersAsync(this HttpResponseMessage response, CancellationToken ct)
+    public static async Task<TResult> SerializeAsync<TResult>(this HttpResponseMessage response, CancellationToken ct) where TResult : IEnumerable<object>
     {
         using var stream = await response.Content.ReadAsStreamAsync(ct)!;
-        var characters = await JsonSerializer.DeserializeAsync<IEnumerable<Character>>(stream, WithSerializerOptions(), ct);
+        var result = await JsonSerializer.DeserializeAsync<TResult>(stream, WithSerializerOptions(), ct);
 
-        if(characters is object && characters.Any())
+        if(result is object && result.Any())
         {
-            return characters;
+            return result;
         }
         else
         {
-            throw new InvalidOperationException("Got no characters from server");
+            throw new InvalidOperationException("Got no data from server");
         }
     }
 }
