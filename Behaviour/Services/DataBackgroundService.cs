@@ -51,7 +51,7 @@ public class DataBackgroundService(
                     var text = await textTask;
                     if(text.StartsWith("<"))
                     {
-                        throw new Exception("Got XML or HTML!");
+                        throw new InvalidOperationException("Got XML or HTML!");
                     }
                     else
                     {
@@ -107,6 +107,7 @@ public class DataBackgroundService(
                 await Task.Delay(TimeSpan.FromMinutes(12), ct);
             }
         }
+        // ToDo: differentiate on exception types
         catch(Exception ex)
         {
             logger.LogError(ex, ex.Message);

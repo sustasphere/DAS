@@ -80,6 +80,8 @@ public class Character : IEquatable<Character>
     /// </summary>
     /// <returns></returns>
     public Person AsPerson() => new() {
+        // ToDo: change the logic below, since the AddCharacterRequestFilter should apply validation logic
+        // Hence, change to 'explicit throw' => ArgumentException
         Path = Url.Contains("api/") ? Url[Url.IndexOf("api/")..] : "api/characters/999",
         Name = Name,
         Gender = Gender,
