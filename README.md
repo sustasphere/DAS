@@ -12,8 +12,6 @@ Before one can actual run the solution, one should check if a network connection
 The reason for this, is that the WebApi project does a continuous polling on 'a so called' server; by default located at www.anapioficeandfire.com.
 
 Building the WebApi project is obviously simple; simply run 'dotnet build' within the WebApi folder. 
-Note that all files 'under the bin/Debug/net8.0 folder' have been removed before creating the zip-file of the solution.
-Hence, a first build of the WebApi project is mandatory.
 
 >The steps written below are ***only necessary if one should want to alter the existing database*** instance (e.g. from current SqLite to Sql Server).
 
@@ -68,9 +66,8 @@ Please also note that the current code ***lacks any unit tests***; this is unfor
 In addition to the lack of unit tests, most of the code within the consumers, filters and services have low readability and lack of testability.
 For improving the readability and testability, I would have preferred to use extension methods, but again: lack of time.
 
-However, an initial approach has been made by adding the static class HttpRequestFunctions within the Behaviour project. 
-The static functions of this class are very much testable and readable. 
-Hence, by extending this approach, one can also improve the overall testability and readability, say for instance of the background service.
+However, an initial approach has been made by adding the static class HttpRequestFunctions and DbContextFunctions within the Behaviour project. 
+The static functions of this class are very much testable and readable. Hence, by extending this approach, one can improve the overall testability and readability.
 
 The best way - for now however - is getting in touch with the original developer => <giovanni.scheepers@outlook.com>
 
