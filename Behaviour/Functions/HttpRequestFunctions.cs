@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DAS.GoT.Types.Utils;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,15 +25,10 @@ public static class HttpRequestFunctions
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="configuration"></param>
+    /// <param name="setup"></param>
     /// <returns></returns>
-    public static string WithUrl(this IConfiguration configuration)
-    {
-        // ToDo: load the host and data from app-settings
-        var host = "anapioficeandfire.com";
-        var data = "characters";
-        return $"https://www.{host}/api/{data}";
-    }
+    public static string WithUrl(this IOptions<ServerSetup> setup)
+        => $"https://www.{setup.Value.Host}/api/{setup.Value.Path}";
 
     /// <summary>
     /// 
@@ -43,10 +40,10 @@ public static class HttpRequestFunctions
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="configuration"></param>
+    /// <param name="setup"></param>
     /// <returns></returns>
-    public static HttpRequestMessage WithRequest(this IConfiguration configuration)
-        => new HttpRequestMessage(HttpMethod.Get, configuration.WithUrl()) {
+    public static HttpRequestMessage WithRequest(this IOptions<ServerSetup> setup)
+        => new HttpRequestMessage(HttpMethod.Get, setup.WithUrl()) {
             Content = default,
             Headers = {
                     { HeaderNames.Accept, "application/json" },

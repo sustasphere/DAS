@@ -1,6 +1,7 @@
 using DAS.GoT.Behaviour.Consumers;
 using DAS.GoT.Behaviour.Filters;
 using DAS.GoT.Behaviour.Services;
+using DAS.GoT.Types.Utils;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,13 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        (var builder, var srvSetup) = (WebApplication.CreateBuilder(args), new ServerSetup());
 
         var withConnString = builder.Configuration.GetConnectionString("DevDb");
         Action<DbContextOptionsBuilder> withOptionsBuilder = ob => ob.UseSqlite(withConnString);
+
+        builder.Configuration.Bind(ServerSetup.Key, srvSetup);
+        builder.Services.Configure<ServerSetup>(builder.Configuration.GetSection(ServerSetup.Key));
 
         builder.Services.AddDbContext<PersonContext>(withOptionsBuilder);
         builder.Services.AddHttpClient();

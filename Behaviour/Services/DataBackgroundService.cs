@@ -1,9 +1,12 @@
 ﻿using DAS.GoT.Types.Models;
+using DAS.GoT.Types.Utils;
+using MassTransit.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,13 +19,13 @@ namespace DAS.GoT.Behaviour.Services;
 /// </summary>
 /// <param name="logger"></param>
 /// <param name="store"></param>
-/// <param name="configuration"></param>
+/// <param name="setup"></param>
 /// <param name="provider"></param>
 /// <param name="clientFactory"></param>
 public class DataBackgroundService(
     ILogger<DataBackgroundService> logger,
     ICoreStore store,
-    IConfiguration configuration,
+    IOptions<ServerSetup> setup,
     IServiceProvider provider,
     IHttpClientFactory clientFactory) : BackgroundService
 {
@@ -43,8 +46,7 @@ public class DataBackgroundService(
 
             while(!ct.IsCancellationRequested)
             {
-                var responseMessage = await clientFactory.WithClient()
-                    .SendAsync(configuration.WithRequest(), ct);
+                var responseMessage = await clientFactory.WithClient().SendAsync(setup.WithRequest(), ct);
                 if(responseMessage!.IsSuccessStatusCode)
                 {
                     using var textTask = responseMessage.Content.ReadAsStringAsync(ct);
@@ -104,7 +106,7 @@ public class DataBackgroundService(
                         logger.LogError($"Unable to retrieve characters from database either");
                     }
                 }
-                await Task.Delay(TimeSpan.FromMinutes(12), ct);
+                await Task.Delay(TimeSpan.FromMinutes(setup.Value.PollingDelayMinutes), ct);
             }
         }
         // ToDo: differentiate on exception types
