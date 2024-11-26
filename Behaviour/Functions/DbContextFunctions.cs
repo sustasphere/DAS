@@ -1,7 +1,7 @@
 ﻿using DAS.GoT.Behaviour.Services;
 using DAS.GoT.Types.Models;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DAS.GoT.Behaviour.Functions;
 
@@ -10,6 +10,22 @@ namespace DAS.GoT.Behaviour.Functions;
 /// </summary>
 public static class DbContextFunctions
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TContext"></typeparam>
+    /// <param name="provider"></param>
+    /// <returns></returns>
+    public static TContext GetContext<TContext>(this IServiceProvider provider) where TContext : DbContext
+    {
+        if(provider is object)
+        {
+            using var scope = provider.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<TContext>();
+        }
+        throw new InvalidOperationException("Service provider is not registered");
+    }
+
     /// <summary>
     /// 
     /// </summary>

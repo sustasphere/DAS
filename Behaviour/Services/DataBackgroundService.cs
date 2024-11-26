@@ -16,13 +16,13 @@ namespace DAS.GoT.Behaviour.Services;
 /// <param name="logger"></param>
 /// <param name="store"></param>
 /// <param name="setup"></param>
-/// <param name="provider"></param>
+/// <param name="serviceProvider"></param>
 /// <param name="clientFactory"></param>
 public class DataBackgroundService(
     ILogger<DataBackgroundService> logger,
     ICoreStore store,
     IOptions<ServerSetup> setup,
-    IServiceProvider provider,
+    IServiceProvider serviceProvider,
     IHttpClientFactory clientFactory) : BackgroundService
 {
     /// <summary>
@@ -35,8 +35,7 @@ public class DataBackgroundService(
     {
         try
         {
-            using var scope = provider!.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<PersonContext>();
+            var dbContext = serviceProvider.GetContext<PersonContext>();
 
             while(!ct.IsCancellationRequested)
             {
