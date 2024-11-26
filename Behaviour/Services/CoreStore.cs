@@ -96,6 +96,37 @@ public class CoreStore : ICoreStore
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="values"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public async Task<int> LoadAsync(IEnumerable<Character> values, CancellationToken ct)
+    {
+        var producer = new TaskCompletionSource<int>(ct);
+        if(IsEmpty())
+        {
+            AddMany(values);
+            producer.SetResult(Characters.Count);
+        }
+        else
+        {
+            if(!HasIdentical(values.Select(c => c.AsCore())))
+            {
+                // ToDo: improve removal and / or adding of characters
+                RemoveAll();
+                AddMany(values);
+                producer.SetResult(Characters.Count);
+            }
+            else
+            {
+                producer.SetResult(0);
+            }
+        }
+        return await producer.Task;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
@@ -128,4 +159,6 @@ public class CoreStore : ICoreStore
     /// <returns></returns>
     public IEnumerable<CharacterCore> Search(string alias)
         => Characters.Values.Where(c => c.Alias.Contains(alias, StringComparison.OrdinalIgnoreCase));
+
+
 }

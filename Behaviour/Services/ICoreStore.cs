@@ -52,6 +52,14 @@ public interface ICoreStore
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="values"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task<int> LoadAsync(IEnumerable<Character> values, CancellationToken ct);
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
     CharacterCore Get(string key);

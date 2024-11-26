@@ -22,4 +22,12 @@ public class ServerSetup
     /// 
     /// </summary>
     public int PollingDelayMinutes { get; init; } = 12;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public async Task WaitForNextPollingAsync(CancellationToken ct)
+        => await Task.Delay(TimeSpan.FromMinutes(PollingDelayMinutes), ct);
 }

@@ -1,7 +1,9 @@
-﻿using DAS.GoT.Types.Utils;
+﻿using DAS.GoT.Types.Models;
+using DAS.GoT.Types.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -50,4 +52,43 @@ public static class HttpRequestFunctions
                     { HeaderNames.UserAgent, "WebApi Client" }
                 }
         };
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static async Task<bool> HasJsonContentAsync(this HttpResponseMessage response, CancellationToken ct)
+    {
+        using var textTask = response.Content.ReadAsStringAsync(ct);
+        if((await textTask).StartsWith("<"))
+        {
+            throw new InvalidOperationException("Got XML or HTML from server");
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static async Task<IEnumerable<Character>> AsCharactersAsync(this HttpResponseMessage response, CancellationToken ct)
+    {
+        using var stream = await response.Content.ReadAsStreamAsync(ct)!;
+        var characters = await JsonSerializer.DeserializeAsync<IEnumerable<Character>>(stream, WithSerializerOptions(), ct);
+
+        if(characters is object && characters.Any())
+        {
+            return characters;
+        }
+        else
+        {
+            throw new InvalidOperationException("Got no characters from server");
+        }
+    }
 }
